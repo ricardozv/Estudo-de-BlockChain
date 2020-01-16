@@ -6,6 +6,8 @@ const Blockchain = require('./blockchain');
 const bitcoin = new Blockchain();
 const nodeAddresss = uuid().split('-').join('');
 const port = process.argv[2];
+const newNodeUrl = req.body.newNodeUrl;
+
 
 
 app.get('/blockchain', function(req, res){
@@ -15,6 +17,18 @@ app.get('/blockchain', function(req, res){
 app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({extended: false}));
+
+app.post('/register-and-broadcast-node', function(req, res){
+
+});
+
+app.post('/register-node', function(req, res){
+
+});
+
+app.post('/register-nodes-bulk', function (req, res){
+
+});
 
 
 
