@@ -1,4 +1,7 @@
 # Estudo-de-BlockChain
-study of Blockchain
+<br/>
+Study of Blockchain
+<br/>
 Criando uma blockchain em javascript
+<br/>
 Creating a javascript blockchain
