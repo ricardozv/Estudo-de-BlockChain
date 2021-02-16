@@ -5,11 +5,8 @@ const Blockchain = require('./blockchain');
 const uuid = require('uuid/v1');
 const port = process.argv[2];
 const rp = require('request-promise');
-
 const nodeAddress = uuid().split('-').join('');
-
 const bitcoin = new Blockchain();
-
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -17,6 +14,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // get entire blockchain
 // buscando blockchain inteira 
+
 app.get('/blockchain', function (req, res) {
   res.send(bitcoin);
 });
@@ -24,6 +22,7 @@ app.get('/blockchain', function (req, res) {
 
 // create a new transaction
 // criando nova transação
+
 app.post('/transaction', function(req, res) {
 	const newTransaction = req.body;
 	const blockIndex = bitcoin.addTransactionToPendingTransactions(newTransaction);
@@ -33,6 +32,7 @@ app.post('/transaction', function(req, res) {
 
 // broadcast transaction
 // Transmitindo transação 
+
 app.post('/transaction/broadcast', function(req, res) {
 	const newTransaction = bitcoin.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
 	bitcoin.addTransactionToPendingTransactions(newTransaction);
@@ -58,6 +58,7 @@ app.post('/transaction/broadcast', function(req, res) {
 
 // mine a block
 // minerando bloco 
+
 app.get('/mine', function(req, res) {
 	const lastBlock = bitcoin.getLastBlock();
 	const previousBlockHash = lastBlock['hash'];
@@ -65,11 +66,12 @@ app.get('/mine', function(req, res) {
 		transactions: bitcoin.pendingTransactions,
 		index: lastBlock['index'] + 1
 	};
+
 	const nonce = bitcoin.proofOfWork(previousBlockHash, currentBlockData);
 	const blockHash = bitcoin.hashBlock(previousBlockHash, currentBlockData, nonce);
 	const newBlock = bitcoin.createNewBlock(nonce, previousBlockHash, blockHash);
-
 	const requestPromises = [];
+
 	bitcoin.networkNodes.forEach(networkNodeUrl => {
 		const requestOptions = {
 			uri: networkNodeUrl + '/receive-new-block',
@@ -91,11 +93,13 @@ app.get('/mine', function(req, res) {
 				sender: "00",
 				recipient: nodeAddress
 			},
+
 			json: true
 		};
 
 		return rp(requestOptions);
 	})
+
 	.then(data => {
 		res.json({
 			note: "New block mined & broadcast successfully",
@@ -107,6 +111,7 @@ app.get('/mine', function(req, res) {
 
 // receive new block
 // recebendo novo bloco 
+
 app.post('/receive-new-block', function(req, res) {
 	const newBlock = req.body.newBlock;
 	const lastBlock = bitcoin.getLastBlock();
@@ -120,6 +125,7 @@ app.post('/receive-new-block', function(req, res) {
 			note: 'New block received and accepted.',
 			newBlock: newBlock
 		});
+
 	} else {
 		res.json({
 			note: 'New block rejected.',
@@ -131,6 +137,7 @@ app.post('/receive-new-block', function(req, res) {
 
 // register a node and broadcast it the network
 // registrando nó e transmitindo para rede 
+
 app.post('/register-and-broadcast-node', function(req, res) {
 	const newNodeUrl = req.body.newNodeUrl;
 	if (bitcoin.networkNodes.indexOf(newNodeUrl) == -1) bitcoin.networkNodes.push(newNodeUrl);
@@ -158,14 +165,17 @@ app.post('/register-and-broadcast-node', function(req, res) {
 
 		return rp(bulkRegisterOptions);
 	})
+
 	.then(data => {
 		res.json({ note: 'New node registered with network successfully.' });
+
 	});
 });
 
 
 // register a node with the network
 // registrando novo nó na rede 
+
 app.post('/register-node', function(req, res) {
 	const newNodeUrl = req.body.newNodeUrl;
 	const nodeNotAlreadyPresent = bitcoin.networkNodes.indexOf(newNodeUrl) == -1;
@@ -177,6 +187,7 @@ app.post('/register-node', function(req, res) {
 
 // register multiple nodes at once
 // registrando multiplos nós na rede
+
 app.post('/register-nodes-bulk', function(req, res) {
 	const allNetworkNodes = req.body.allNetworkNodes;
 	allNetworkNodes.forEach(networkNodeUrl => {
@@ -191,6 +202,7 @@ app.post('/register-nodes-bulk', function(req, res) {
 
 // consensus
 // consenso entre hashs 
+
 app.get('/consensus', function(req, res) {
 	const requestPromises = [];
 	bitcoin.networkNodes.forEach(networkNodeUrl => {
@@ -239,6 +251,7 @@ app.get('/consensus', function(req, res) {
 
 // get block by blockHash
 // pegando blockhash 
+
 app.get('/block/:blockHash', function(req, res) { 
 	const blockHash = req.params.blockHash;
 	const correctBlock = bitcoin.getBlock(blockHash);
@@ -250,6 +263,7 @@ app.get('/block/:blockHash', function(req, res) {
 
 // get transaction by transactionId
 // pegando transação usando o ID 
+
 app.get('/transaction/:transactionId', function(req, res) {
 	const transactionId = req.params.transactionId;
 	const trasactionData = bitcoin.getTransaction(transactionId);
@@ -262,6 +276,7 @@ app.get('/transaction/:transactionId', function(req, res) {
 
 // get address by address
 // pegando endereço
+
 app.get('/address/:address', function(req, res) {
 	const address = req.params.address;
 	const addressData = bitcoin.getAddressData(address);
@@ -273,6 +288,7 @@ app.get('/address/:address', function(req, res) {
 
 // block explorer
 // explorando bloco 
+
 app.get('/block-explorer', function(req, res) {
 	res.sendFile('./block-explorer/index.html', { root: __dirname });
 });

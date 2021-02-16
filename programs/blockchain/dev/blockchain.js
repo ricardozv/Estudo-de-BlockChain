@@ -5,10 +5,8 @@ const uuid = require('uuid/v1');
 function Blockchain () {
     this.chain = [];
     this.pendingTransactions = [];
-
     this.currentNodeUrl = currentNodeUrl;
     this.networkNodes = [];
-
     this.createNewBlock(100, '0', '0');
 
 
@@ -147,9 +145,6 @@ Blockchain.prototype.getAddressData = function(address) {
 		addressBalance: balance
 	};
 };
-
-
-
 
 
 

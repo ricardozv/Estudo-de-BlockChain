@@ -5,9 +5,7 @@ const Blockchain = require('./blockchain');
 const uuid = require('uuid/v1');
 const port = process.argv[2];
 const rp = require('request-promise');
-
 const nodeAddress = uuid().split('-').join('');
-
 const bitcoin = new Blockchain();
 
 app.use(bodyParser.json());
@@ -33,6 +31,7 @@ app.get('/blockchain', function (req, res) {
   
   // broadcast transaction
   // transmisão da transação 
+
   app.post('/transaction/broadcast', function(req, res) {
       const newTransaction = bitcoin.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
       bitcoin.addTransactionToPendingTransactions(newTransaction);
@@ -58,6 +57,7 @@ app.get('/blockchain', function (req, res) {
   
   // mine a block
   // Minerando bloco 
+  
   app.get('/mine', function(req, res) {
       const lastBlock = bitcoin.getLastBlock();
       const previousBlockHash = lastBlock['hash'];
@@ -65,10 +65,10 @@ app.get('/blockchain', function (req, res) {
           transactions: bitcoin.pendingTransactions,
           index: lastBlock['index'] + 1
       };
+
       const nonce = bitcoin.proofOfWork(previousBlockHash, currentBlockData);
       const blockHash = bitcoin.hashBlock(previousBlockHash, currentBlockData, nonce);
       const newBlock = bitcoin.createNewBlock(nonce, previousBlockHash, blockHash);
-  
       const requestPromises = [];
       bitcoin.networkNodes.forEach(networkNodeUrl => {
           const requestOptions = {
@@ -107,6 +107,7 @@ app.get('/blockchain', function (req, res) {
   
   // receive new block
   //recebendo novo bloco
+
   app.post('/receive-new-block', function(req, res) {
       const newBlock = req.body.newBlock;
       const lastBlock = bitcoin.getLastBlock();
@@ -131,6 +132,7 @@ app.get('/blockchain', function (req, res) {
   
   // register a node and broadcast it the network
   // registrando novo nó e transmitindo para rede
+
   app.post('/register-and-broadcast-node', function(req, res) {
       const newNodeUrl = req.body.newNodeUrl;
       if (bitcoin.networkNodes.indexOf(newNodeUrl) == -1) bitcoin.networkNodes.push(newNodeUrl);
@@ -166,6 +168,7 @@ app.get('/blockchain', function (req, res) {
   
   // register a node with the network
   // registrando um nó na rede 
+
   app.post('/register-node', function(req, res) {
       const newNodeUrl = req.body.newNodeUrl;
       const nodeNotAlreadyPresent = bitcoin.networkNodes.indexOf(newNodeUrl) == -1;
@@ -177,6 +180,7 @@ app.get('/blockchain', function (req, res) {
   
   // register multiple nodes at once
   // registrando multiplus nós 
+
   app.post('/register-nodes-bulk', function(req, res) {
       const allNetworkNodes = req.body.allNetworkNodes;
       allNetworkNodes.forEach(networkNodeUrl => {
@@ -191,6 +195,7 @@ app.get('/blockchain', function (req, res) {
   
   // consensus
   // consensu
+
   app.get('/consensus', function(req, res) {
       const requestPromises = [];
       bitcoin.networkNodes.forEach(networkNodeUrl => {
@@ -239,6 +244,7 @@ app.get('/blockchain', function (req, res) {
   
   // get block by blockHash
   // pegando bloco no blockHash
+
   app.get('/block/:blockHash', function(req, res) { 
       const blockHash = req.params.blockHash;
       const correctBlock = bitcoin.getBlock(blockHash);
@@ -250,6 +256,7 @@ app.get('/blockchain', function (req, res) {
   
   // get transaction by transactionId
   // pegando transação pelo ID
+
   app.get('/transaction/:transactionId', function(req, res) {
       const transactionId = req.params.transactionId;
       const trasactionData = bitcoin.getTransaction(transactionId);
@@ -262,6 +269,7 @@ app.get('/blockchain', function (req, res) {
   
   // get address by address
   // pegando endereço 
+
   app.get('/address/:address', function(req, res) {
       const address = req.params.address;
       const addressData = bitcoin.getAddressData(address);
@@ -273,13 +281,10 @@ app.get('/blockchain', function (req, res) {
   
   // block explorer
   // explorando bloco
+
   app.get('/block-explorer', function(req, res) {
       res.sendFile('./block-explorer/index.html', { root: __dirname });
   });
-  
-  
-  
-  
   
   app.listen(port, function() {
       console.log(`Listening on port ${port}...`);
